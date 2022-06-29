@@ -1,0 +1,29 @@
+## BUILD
+mvn clean package -DskipTests=true
+cp target/test2-0.0.1-SNAPSHOT.jar ../../../git/vehicle-profile/misc/docker/pulsar/functions
+
+## TOPICS
+./pulsar-admin topics unload persistent://public/default/test-status-in
+./pulsar-admin topics delete-partitioned-topic persistent://public/default/test-status-in
+./pulsar-admin topics create-partitioned-topic --partitions 1 persistent://public/default/test-status-in
+./pulsar-admin topics create-subscription persistent://public/default/test-status-in -s test-status-in-flink
+
+./pulsar-admin topics unload persistent://public/default/test-aggr-out
+./pulsar-admin topics delete-partitioned-topic persistent://public/default/test-aggr-out
+./pulsar-admin topics create-partitioned-topic --partitions 1 persistent://public/default/test-aggr-out
+./pulsar-admin topics create-subscription persistent://public/default/test-aggr-out -s test-aggr-out-peek
+
+## SCHEMAS
+./pulsar-admin schemas delete persistent://public/default/test-status-in
+./pulsar-admin schemas extract \
+    --classname com.example.test2.processingstatus.model.ProcessingStatus \
+    --jar /pulsar/functions/test2-0.0.1-SNAPSHOT.jar \
+    --type avro \
+    persistent://public/default/test-status-in
+
+./pulsar-admin schemas delete persistent://public/default/test-aggr-out
+./pulsar-admin schemas extract \
+    --classname com.example.test2.processingstatus.model.ProcessingStatusAggregate \
+    --jar /pulsar/functions/test2-0.0.1-SNAPSHOT.jar \
+    --type avro \
+    persistent://public/default/test-aggr-out
