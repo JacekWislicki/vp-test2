@@ -1,4 +1,4 @@
-package com.example.test2.processingstatus.utils;
+package com.example.test2.flinkjob.utils;
 
 public class Config {
 
